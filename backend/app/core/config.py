@@ -1,6 +1,7 @@
 import os
 from typing import List, Optional
 from pydantic_settings import BaseSettings
+from pydantic import field_validator
 from dotenv import load_dotenv
 
 # Load .env file automatically
@@ -12,7 +13,7 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     
     # Security & Tokens
-    SECRET_KEY: str = os.getenv("SECRET_KEY", "super-secret-key-change-in-production-qa-gen-2026-secure-jwt")
+    SECRET_KEY: str  # Required from the environment or an untracked .env file.
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 hours
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
@@ -53,8 +54,15 @@ class Settings(BaseSettings):
     # Default Admin Seed
     DEFAULT_ADMIN_USERNAME: str = os.getenv("DEFAULT_ADMIN_USERNAME", "admin")
     DEFAULT_ADMIN_EMAIL: str = os.getenv("DEFAULT_ADMIN_EMAIL", "admin@qagenerator.com")
-    DEFAULT_ADMIN_PASSWORD: str = os.getenv("DEFAULT_ADMIN_PASSWORD", "AdminSecret123!")
+    DEFAULT_ADMIN_PASSWORD: str = ""  # Empty disables bootstrap.
     
+    @field_validator("SECRET_KEY")
+    @classmethod
+    def validate_secret_key(cls, value: str) -> str:
+        if len(value) < 32 or value.lower().startswith(("super-secret", "change", "replace")):
+            raise ValueError("SECRET_KEY must be a private random value of at least 32 characters")
+        return value
+
     # File Storage
     UPLOAD_DIR: str = os.path.join(os.getcwd(), "uploads")
     MAX_FILE_SIZE_MB: int = 50
