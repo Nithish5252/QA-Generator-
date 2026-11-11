@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { Brain, Lock, User as UserIcon, ShieldAlert, Sparkles } from 'lucide-react';
+import { Brain, Lock, User as UserIcon, ShieldAlert } from 'lucide-react';
 import { useAuthStore } from '../store/useAuthStore';
 
 export const LoginPage: React.FC = () => {
@@ -75,13 +75,7 @@ export const LoginPage: React.FC = () => {
         </form>
 
         <div className="mt-6 pt-6 border-t border-slate-800/60 flex items-center justify-between text-xs">
-          <button
-            type="button"
-            onClick={() => { setUsername('admin'); setPassword('AdminSecret123!'); }}
-            className="text-indigo-400 font-medium hover:text-indigo-300 flex items-center gap-1 transition-colors"
-          >
-            <Sparkles className="w-3.5 h-3.5" /> Fill Quick Admin Login
-          </button>
+
 
           <Link to="/register" className="text-slate-400 hover:text-slate-200 transition-colors">
             Register Account →
