@@ -36,18 +36,10 @@ async def refresh_token(req: RefreshTokenRequest, db: AsyncSession = Depends(get
     return tokens
 
 @router.post("/reset-password")
-async def reset_password(req: PasswordResetRequest, db: AsyncSession = Depends(get_db)):
-    # Password reset flow
-    from app.core.security import get_password_hash
-    from sqlalchemy import select
-    stmt = select(User).where(User.email == req.email)
-    res = await db.execute(stmt)
-    user = res.scalars().first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User with this email does not exist.")
-    user.hashed_password = get_password_hash(req.new_password)
-    await db.commit()
-    return {"message": "Password successfully reset."}
+async def reset_password(req: PasswordResetRequest):
+    # Email alone is not proof of account ownership. Keep disabled until a
+    # single-use, expiring, out-of-band reset-token flow is implemented.
+    raise HTTPException(status_code=503, detail="Password recovery is temporarily disabled.")
 
 @router.post("/logout")
 async def logout(current_user: User = Depends(get_current_user), db: AsyncSession = Depends(get_db)):
