@@ -14,37 +14,25 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("qa_platform_app")
 
 async def seed_default_admin():
+    # Bootstrap is opt-in. Never create shared or personal hardcoded accounts.
+    if not settings.DEFAULT_ADMIN_PASSWORD:
+        logger.info("Admin bootstrap disabled: no DEFAULT_ADMIN_PASSWORD configured.")
+        return
     async with AsyncSessionLocal() as session:
-        # Seed primary admin
-        stmt1 = select(User).where(User.username == "admin")
-        res1 = await session.execute(stmt1)
-        if not res1.scalars().first():
-            logger.info("Seeding default Admin user 'admin'...")
-            session.add(User(
-                username="admin",
-                email="admin@qagenerator.com",
-                hashed_password=get_password_hash("AdminSecret123!"),
-                full_name="System Administrator",
-                role="Admin",
-                is_active=True,
-                is_suspended=False
-            ))
-
-        # Seed Nithish52 admin
-        stmt2 = select(User).where(User.username == "Nithish52")
-        res2 = await session.execute(stmt2)
-        if not res2.scalars().first():
-            logger.info("Seeding Admin user 'Nithish52'...")
-            session.add(User(
-                username="Nithish52",
-                email="nithishnithishkumar371@gmail.com",
-                hashed_password=get_password_hash("Nithish@5252"),
-                full_name="Nithishkumar (Admin)",
-                role="Admin",
-                is_active=True,
-                is_suspended=False
-            ))
-
+        result = await session.execute(
+            select(User).where(User.username == settings.DEFAULT_ADMIN_USERNAME)
+        )
+        if result.scalars().first():
+            return  # Never reset an existing account during startup.
+        session.add(User(
+            username=settings.DEFAULT_ADMIN_USERNAME,
+            email=settings.DEFAULT_ADMIN_EMAIL,
+            hashed_password=get_password_hash(settings.DEFAULT_ADMIN_PASSWORD),
+            full_name="System Administrator",
+            role="Admin",
+            is_active=True,
+            is_suspended=False,
+        ))
         await session.commit()
 
 @asynccontextmanager
