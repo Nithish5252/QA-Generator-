@@ -1,3 +1,4 @@
+import secrets
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
@@ -6,17 +7,19 @@ client = TestClient(app)
 
 def test_quiz_generation_and_session():
     with TestClient(app) as client:
-        # Register user
+        test_password = secrets.token_urlsafe(24)
+        test_username = "quiz_test_" + secrets.token_hex(6)
+        # Register an isolated non-admin test user
         client.post("/api/v1/auth/register", json={
-            "username": "admin",
-            "email": "admin_quiz_test@example.com",
-            "password": "AdminSecret123!",
+            "username": test_username,
+            "email": f"{test_username}@example.com",
+            "password": test_password,
             "full_name": "Admin Tester"
         })
         # 1. Login
         login_resp = client.post("/api/v1/auth/login", json={
-            "username": "admin",
-            "password": "AdminSecret123!"
+            "username": test_username,
+            "password": test_password
         })
 
         assert login_resp.status_code == 200
